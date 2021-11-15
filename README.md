@@ -8,7 +8,11 @@ https://learnouts.com/student/cw/10/
 
 Contributions:
 
-- todo
+- User (self) profile page
+- User (other) profile page
+- Hobby details page
+- User list page
+- EECS OpenShift Deployment
 
 ### Aaron Cuthbertson -
 
@@ -32,7 +36,7 @@ Contributions:
 
 ## EECS OpenShift Deployment
 
-Url: ...
+Url: https://group42-group42.apps.kube.eecs.qmul.ac.uk/
 
 ## Admin
 
