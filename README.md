@@ -67,7 +67,7 @@ Url: https://group42-group42.apps.kube.eecs.qmul.ac.uk/
 - [ ] Avoiding hard-coded URLs using URL reversing
 - [ ] Avoiding code duplication using template hierarchy and/or decorators where needed
 - [ ] Required unit tests included
-- [ ] App deployed to Openshift
+- [x] App deployed to Openshift
 - [ ] README and requirements.txt files included with the requested information
 
 ## About the Application
