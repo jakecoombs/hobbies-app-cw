@@ -20,7 +20,9 @@ Contributions:
 
 Contributions:
 
-- todo
+- Create Hobby model
+- Ajax for User (filter by either id/city/age, url params)
+- Ajax for Hobby
 
 ### Ziyad Mahmood -
 
