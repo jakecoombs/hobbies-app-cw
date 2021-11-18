@@ -45,8 +45,8 @@ Url: https://group42-group42.apps.kube.eecs.qmul.ac.uk/
 
 ## Test Users
 
-1.  - username
-    - password
+1.  - `testuser`
+    - `pass`
 2.  - username
     - password
 3.  - username

@@ -22,6 +22,11 @@
                 <div class="h5 text-secondary">
                     You are visitor number {{ count }}
                 </div>
+                <div>
+                    {% if user.is_authenticated %}
+                        You are logged in as {{ user.username }}
+                    {% endif %}
+                </div>
             </div>
         </div>
 

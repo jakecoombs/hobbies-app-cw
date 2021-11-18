@@ -9,7 +9,19 @@ class PageView(models.Model):
 
 
 class User(AbstractUser):
-    db_table = "auth_user"
+    username = models.CharField(max_length=50, unique=True)
+    email = models.CharField(max_length=50)
+    dob = models.DateField()
+
+    city = models.CharField(max_length=20, null=True)
+    image = models.ImageField(upload_to="profile_pictures", null=True)
+
+    following = models.ManyToManyField(
+        to="self",
+        blank=True,
+        symmetrical=True,
+        related_name="friends",
+    )
 
 
 class Hobby(models.Model):

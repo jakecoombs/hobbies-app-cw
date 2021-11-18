@@ -138,3 +138,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 INTERNAL_IPS = ['127.0.0.1']
 
 AUTH_USER_MODEL = "welcome.User"
+
+LOGIN_URL = "/login/" # default redirect url for @login_required
