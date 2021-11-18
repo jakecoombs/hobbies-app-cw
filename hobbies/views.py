@@ -17,7 +17,7 @@ def index(request):
     hostname = os.getenv('HOSTNAME', 'unknown')
     PageView.objects.create(hostname=hostname)
 
-    return render(request, 'welcome/bootstrap.html', {
+    return render(request, 'hobbies/bootstrap.html', {
         'hostname': hostname,
         'database': database.info(),
         'count': PageView.objects.count()
@@ -52,7 +52,7 @@ def signup(request):
 
             if error_message:
                 # could not authenticate
-                return render(request, "welcome/error.html", {
+                return render(request, "hobbies/error.html", {
                     "error": error_message
                 })
 
@@ -69,10 +69,10 @@ def signup(request):
             authenticated_user = auth.authenticate(username=username, password=password)
             if authenticated_user is not None:
                 auth.login(request, authenticated_user)
-                return redirect("welcome:home")
+                return redirect("hobbies:home")
 
     # GET request (or could not authenticate)
-    return render(request, 'welcome/signup.html', { 'form': SignupForm })
+    return render(request, 'hobbies/signup.html', { 'form': SignupForm })
 
 
 def login(request):
@@ -89,22 +89,22 @@ def login(request):
             user = auth.authenticate(username=username, password=password)
             if user is not None:
                 auth.login(request, user)
-                return redirect("welcome:home")
+                return redirect("hobbies:home")
 
             # could not authenticate
-            return render(request, "welcome/error.html", {
+            return render(request, "hobbies/error.html", {
                 "error": "User is not registered. Please create an account."
             })
 
         # invalid form
-        return render(request, "welcome/login.html", {
+        return render(request, "hobbies/login.html", {
             "form": form
         })
 
-    return render(request, "welcome/login.html", {"form": form})
+    return render(request, "hobbies/login.html", {"form": form})
 
 
 @login_required
 def logout(request):
     auth.logout(request)
-    return redirect("welcome:home")
+    return redirect("hobbies:home")

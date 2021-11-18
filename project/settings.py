@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+from . import database
 import os
 
 from pathlib import Path
@@ -44,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
-    'welcome',
+    'hobbies'
 ]
 
 MIDDLEWARE = [
@@ -83,7 +84,6 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-from . import database
 
 DATABASES = {
     'default': database.config()
@@ -137,6 +137,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 INTERNAL_IPS = ['127.0.0.1']
 
-AUTH_USER_MODEL = "welcome.User"
+AUTH_USER_MODEL = "hobbies.User"
 
-LOGIN_URL = "/login/" # default redirect url for @login_required
+LOGIN_URL = "/login/"  # default redirect url for @login_required

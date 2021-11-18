@@ -17,10 +17,10 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
-from welcome.views import health
+from hobbies.views import health
 
 urlpatterns = [
-    path('', include('welcome.urls')),
+    path('', include('hobbies.urls')),
     path('health/', health),
     path('admin/', admin.site.urls),
 ]

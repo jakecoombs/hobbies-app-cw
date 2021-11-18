@@ -1,10 +1,10 @@
 from django.urls import path
 
-from welcome.api import hobby_api, hobbies_api
+from hobbies.api import hobby_api, hobbies_api
 from . import views
 
 
-app_name = "welcome"
+app_name = "hobbies"
 
 
 urlpatterns = [
