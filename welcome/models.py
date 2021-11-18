@@ -23,6 +23,16 @@ class User(AbstractUser):
         related_name="friends",
     )
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'dob': self.dob,
+            'city': self.city,
+            'image': self.image.url if self.image else None
+        }
+
 
 class Hobby(models.Model):
     name = models.CharField(max_length=50, unique=True)
