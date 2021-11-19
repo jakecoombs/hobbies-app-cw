@@ -1,6 +1,6 @@
 from django.urls import path
 
-from hobbies.api import hobby_api, hobbies_api
+from hobbies.api.hobby_api import hobby_api, hobbies_api
 from . import views
 
 
