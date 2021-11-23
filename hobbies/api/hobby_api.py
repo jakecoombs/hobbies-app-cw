@@ -44,6 +44,8 @@ def hobbies_api(request):
             name=new_hobby_dict['name'],
             description=new_hobby_dict['description'])
 
+        new_hobby_object.save()
+
         if "users" in new_hobby_dict.keys():
             for userID in new_hobby_dict['users']:
                 user_to_add = User.objects.filter(id=userID).first()

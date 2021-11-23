@@ -2,7 +2,7 @@ import os
 
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
 
 from . import database
@@ -72,7 +72,7 @@ def signup(request):
                 return redirect("hobbies:home")
 
     # GET request (or could not authenticate)
-    return render(request, 'hobbies/signup.html', { 'form': SignupForm })
+    return render(request, 'hobbies/signup.html', {'form': SignupForm})
 
 
 def login(request):
