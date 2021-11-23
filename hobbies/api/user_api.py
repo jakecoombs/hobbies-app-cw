@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 from hobbies.models import Hobby, User
-from . import utils
+from .. import utils
 
 
 @login_required

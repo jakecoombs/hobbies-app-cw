@@ -63,19 +63,7 @@ def hobbies_api(request):
 
     if request.method == "GET":
         return JsonResponse({
-            'hobbies': generate_hobbies_dict()
+            'hobbies':  [hobby.to_dict_with_users() for hobby in Hobby.objects.all()]
         })
 
     return HttpResponseBadRequest("Invalid method")
-
-
-@login_required
-def generate_hobbies_dict():
-    hobbies_dict = [hobby.to_dict() for hobby in Hobby.objects.all()]
-
-    for hobby in hobbies_dict:
-        hobby_object = Hobby.objects.get(id=hobby['id'])
-        users_dict = [user.to_dict() for user in hobby_object.users.all()]
-        hobby['users'] = [user.id for user in users_dict]
-
-    return hobbies_dict

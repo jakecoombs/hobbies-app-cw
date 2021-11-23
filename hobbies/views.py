@@ -2,31 +2,25 @@ import os
 
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
-from . import database
-from .models import PageView, User
+from .models import User
 from .forms import LoginForm, SignupForm
 
 
 @login_required
 def index(request):
-    """Takes an request object as a parameter and creates an pageview object then responds by rendering the index
-    view. """
-    hostname = os.getenv('HOSTNAME', 'unknown')
-    PageView.objects.create(hostname=hostname)
+    """Render the home page of the app"""
 
-    return render(request, 'hobbies/bootstrap.html', {
-        'hostname': hostname,
-        'database': database.info(),
-        'count': PageView.objects.count()
+    return render(request, 'hobbies/index.html', {
+        'title': 'Hobbies',
     })
 
 
 def health(request):
-    """Takes an request as a parameter and gives the count of pageview objects as reponse"""
-    return HttpResponse(PageView.objects.count())
+    """Responds with code 200 to show that the app is up and running"""
+    return HttpResponse(200)
 
 
 def signup(request):
@@ -66,10 +60,11 @@ def signup(request):
             new_user.save()
 
             # create session
-            authenticated_user = auth.authenticate(username=username, password=password)
+            authenticated_user = auth.authenticate(
+                username=username, password=password)
             if authenticated_user is not None:
                 auth.login(request, authenticated_user)
-                return redirect("hobbies:home")
+                return redirect("home")
 
     # GET request (or could not authenticate)
     return render(request, 'hobbies/signup.html', {'form': SignupForm})
@@ -89,7 +84,7 @@ def login(request):
             user = auth.authenticate(username=username, password=password)
             if user is not None:
                 auth.login(request, user)
-                return redirect("hobbies:home")
+                return redirect("home")
 
             # could not authenticate
             return render(request, "hobbies/error.html", {
@@ -107,4 +102,4 @@ def login(request):
 @login_required
 def logout(request):
     auth.logout(request)
-    return redirect("hobbies:home")
+    return redirect("home")

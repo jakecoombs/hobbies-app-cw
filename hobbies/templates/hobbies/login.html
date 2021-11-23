@@ -1,10 +1,7 @@
 {% block content %}
-    <form action="/login/" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Submit">
-    </form>
-    <a href="{% url 'hobbies:signup' %}">
-        Sign up
-    </a>
+<form action="/login/" method="post">
+  {% csrf_token %} {{ form }}
+  <input type="submit" value="Submit" />
+</form>
+<a href="{% url 'signup' %}"> Sign up </a>
 {% endblock %}

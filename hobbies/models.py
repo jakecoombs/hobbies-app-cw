@@ -3,11 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 
 
-class PageView(models.Model):
-    hostname = models.CharField(max_length=32)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-
 class User(AbstractUser):
     username = models.CharField(max_length=50, unique=True)
     email = models.CharField(max_length=50)
@@ -70,3 +65,12 @@ class Hobby(models.Model):
             'description': self.description,
             'api': reverse('hobby-api', kwargs={'hobby_id': self.id})
         }
+
+    def to_dict_with_users(self):
+        hobby_dict = self.to_dict()
+        users_dict = [user.to_dict() for user in self.users.all()]
+        hobby_dict['users'] = {
+            'ids': [user.id for user in users_dict],
+            'length': len(users_dict)
+        }
+        return hobby_dict

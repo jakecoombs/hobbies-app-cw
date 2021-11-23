@@ -5,9 +5,6 @@ from hobbies.api.user_api import user_api, users_api, upload_image
 from . import views
 
 
-app_name = "hobbies"
-
-
 urlpatterns = [
     path('', views.index, name="home"),
     path('api/hobby/<int:hobby_id>/', hobby_api, name='hobby_api'),
