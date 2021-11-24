@@ -1,13 +1,15 @@
 import json
 
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse, Http404
+from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
+                         JsonResponse)
 from django.shortcuts import get_object_or_404
+from hobbies.decorators import user_login_required
 from hobbies.models import Hobby, User
+
 from .. import utils
 
 
-@login_required
+@user_login_required()
 def user_api(request, user_id):
     if request.method == "PUT":
         editing_user_string = request.body.decode('utf8').replace("'", '"')
@@ -46,7 +48,52 @@ def user_api(request, user_id):
     return HttpResponseBadRequest("Invalid method")
 
 
+@user_login_required()
+def active_user_api(request):
+    if request.method == "GET":
+        user = User.objects.get(id=request.user.id)
+        return JsonResponse({
+            'user': user.to_dict_with_hobbies_and_friends()
+        })
+
+    return HttpResponseBadRequest("Invalid method")
+
+
+@user_login_required()
 def users_api(request):
+    if request.method == "GET":
+        users = User.objects.all()
+
+        # Check URL filters
+        username_filter = request.GET.get('username', None)
+        city_filter = request.GET.get('city', None)
+        minimum_age_filter = request.GET.get('minAge', None)
+        maximum_age_filter = request.GET.get('maxAge', None)
+
+        # Apply filters
+        if username_filter:
+            users = users.filter(username=username_filter)
+
+        if city_filter:
+            users = users.filter(city=city_filter)
+
+        if minimum_age_filter:
+            pivot_date = utils.calculate_pivot_date(int(minimum_age_filter))
+            users = users.filter(dob__lte=pivot_date)
+
+        if maximum_age_filter:
+            pivot_date = utils.calculate_pivot_date(int(maximum_age_filter))
+            users = users.filter(dob__gte=pivot_date)
+
+        return JsonResponse({
+            'users': [user.to_dict_with_hobbies_and_friends() for user in users],
+            'total': len(users)
+        })
+
+    return HttpResponseBadRequest("Invalid method")
+
+
+def create_user_api(request):
     if request.method == "POST":
         new_user_string = request.body.decode('utf8').replace("'", '"')
         new_user_dict = json.loads(new_user_string)
@@ -73,40 +120,10 @@ def users_api(request):
         return JsonResponse({
             "user": new_user_object.to_dict_with_hobbies_and_friends()
         })
-
-    if request.method == "GET":
-        users = User.objects.all()
-
-        # Check URL filters
-        id_filter = request.GET.get('id', None)
-        city_filter = request.GET.get('city', None)
-        minimum_age_filter = request.GET.get('minimumAge', None)
-        maximum_age_filter = request.GET.get('maximumAge', None)
-
-        # Apply filters
-        if id_filter:
-            users = users.filter(id=id_filter)
-
-        if city_filter:
-            users = users.filter(city=city_filter)
-
-        if minimum_age_filter:
-            pivot_date = utils.calculate_pivot_date(minimum_age_filter)
-            users = users.filter(dob__lte=pivot_date)
-
-        if maximum_age_filter:
-            pivot_date = utils.calculate_pivot_date(maximum_age_filter)
-            users = users.filter(dob__gte=pivot_date)
-
-        return JsonResponse({
-            'users': [user.to_dict() for user in users],
-            'total': len(users)
-        })
-
     return HttpResponseBadRequest("Invalid method")
 
 
-@login_required
+@user_login_required()
 def upload_image(request):
     user = request.user
     if 'img_file' in request.FILES:

@@ -18,6 +18,15 @@ def index(request):
     })
 
 
+@login_required
+def users(request):
+    """Render the home page of the app"""
+
+    return render(request, 'hobbies/users.html', {
+        'title': 'Hobbies: Users',
+    })
+
+
 def health(request):
     """Responds with code 200 to show that the app is up and running"""
     return HttpResponse(200)

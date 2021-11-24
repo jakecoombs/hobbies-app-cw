@@ -1,19 +1,11 @@
 {% extends 'hobbies/base.html' %} {% block content %}
 <div id="app">
-  <!-- HOBBIES TABLE -->
-  <div id="hobbies" style="margin-bottom: 20px">
-    <div>
+  <template v-if="loaded">
+    <!-- HOBBIES TABLE -->
+    <div id="hobbies" style="margin-bottom: 20px">
       <!-- DISPLAY HOBBIES TABLE -->
       <div style="display: flex">
         <h1 style="flex: 1">Hobbies</h1>
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-toggle="collapse"
-          data-target="#hobbiesTable"
-        >
-          Show/Hide Table
-        </button>
         <a href="/hobbies/create">
           <button
             type="button"
@@ -26,8 +18,8 @@
         </a>
       </div>
 
-      <div class="collapse show" id="hobbiesTable" style="margin-top: 20px">
-        <table class="table table-hover hobbiesTableCollapse">
+      <div style="margin-top: 20px">
+        <table class="table table-hover">
           <thead>
             <tr>
               <th scope="col" class="col-md-auto">Name</th>
@@ -39,13 +31,14 @@
             <tr v-for="hobby in hobbies">
               <th scope="row">[[ hobby.name ]]</th>
               <td>[[ hobby.description ]]</td>
-              <td>[[ hobby.users.length ]]</td>
+              <td>[[ hobby.users.total ]]</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-  </div>
+  </template>
+  <template v-else> Loading... </template>
 </div>
 {% endblock %} {% block scripts %}
 <script>
@@ -54,6 +47,7 @@
     data() {
       // Initialize app with empty values
       return {
+        loaded: false,
         hobbies: [],
       };
     },
@@ -63,6 +57,7 @@
       if (hobbiesResponse.ok) {
         const data = await hobbiesResponse.json();
         this.hobbies = data.hobbies;
+        this.loaded = true;
       } else {
         alert("Failed to load hobbies");
       }

@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 
+DEFAULT_USER_PROFILE_IMAGE = 'https://media.istockphoto.com/vectors/default-profile-picture-avatar-photo-placeholder-vector-illustration-vector-id1223671392?k=20&m=1223671392&s=612x612&w=0&h=lGpj2vWAI3WUT1JeJWm1PRoHT3V15_1pdcTn2szdwQ0='
+
 
 class User(AbstractUser):
     username = models.CharField(max_length=50, unique=True)
@@ -24,8 +26,8 @@ class User(AbstractUser):
             'username': self.username,
             'email': self.email,
             'dob': self.dob,
-            'city': self.city,
-            'image': self.image.url if self.image else None
+            'city': self.city if self.city else None,
+            'image': self.image.url if self.image else DEFAULT_USER_PROFILE_IMAGE
         }
 
     def to_dict_with_hobbies_and_friends(self):
@@ -40,7 +42,7 @@ class User(AbstractUser):
         }
 
         friends_dict = [friend.to_dict()
-                        for friend in self.friends.all()]
+                        for friend in self.following.all()]
         user_dict['friends'] = {
             'friends': [
                 friend.id for friend in friends_dict],

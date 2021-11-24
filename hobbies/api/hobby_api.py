@@ -1,13 +1,12 @@
 import json
 
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404
-
+from hobbies.decorators import user_login_required
 from hobbies.models import Hobby, User
 
 
-@login_required
+@user_login_required()
 def hobby_api(request, hobby_id):
     if request.method == "PUT":
         editing_hobby_string = request.body.decode('utf8').replace("'", '"')
@@ -35,7 +34,7 @@ def hobby_api(request, hobby_id):
     return HttpResponseBadRequest("Invalid method")
 
 
-@login_required
+@user_login_required()
 def hobbies_api(request):
     if request.method == "POST":
         new_hobby_string = request.body.decode('utf8').replace("'", '"')

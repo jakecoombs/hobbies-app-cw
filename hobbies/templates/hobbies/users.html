@@ -1,0 +1,206 @@
+{% extends 'hobbies/base.html' %} {% block content %}
+<div id="app">
+  <template v-if="loaded">
+    <!-- SHOW TABLE IF LOADED -->
+    <div id="users" style="margin-bottom: 20px">
+      <!-- DISPLAY USERS TABLE -->
+      <div style="display: flex">
+        <h1 style="flex: 1">Users</h1>
+        <a :href="'/users/' + currentUser.id">
+          <button
+            type="button"
+            class="btn btn-success"
+            style="margin-left: 10px; height: 100%"
+          >
+            My Profile
+          </button>
+        </a>
+      </div>
+
+      <!-- FILTERS SECTION -->
+      <div class="table-responsive" style="margin-top: 20px">
+        <div id="user-filters" class="collapse" style="margin: 10px 0">
+          <!-- FILTERS FORM -->
+          <form
+            id="user-filters-form"
+            @submit.prevent="applyFilters"
+            style="display: flex; justify-content: space-evenly"
+          >
+            <input type="text" name="username" placeholder="Username" />
+            <input type="text" name="city" placeholder="City" />
+            <input type="number" name="minAge" placeholder="Minimum Age" />
+            <input type="number" name="maxAge" placeholder="Maximum Age" />
+            <button type="submit" class="btn btn-success">Apply Filters</button>
+            <button v-on:click="resetUsers" class="btn btn-warning">
+              Reset
+            </button>
+          </form>
+        </div>
+
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col" width="10%">ID</th>
+              <th scope="col" width="10%"><!-- Image --></th>
+              <th scope="col" width="25%">Username</th>
+              <th scope="col" width="25%">City</th>
+              <th scope="col" width="15%">Hobbies In Common</th>
+              <th scope="col" width="25%">
+                <div style="display: flex; justify-content: flex-end">
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    style="height: 100%"
+                    data-toggle="collapse"
+                    data-target="#user-filters"
+                  >
+                    Filters
+                  </button>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="user in users"
+              style="cursor: pointer"
+              v-on:click="redirect(user)"
+            >
+              <th scope="row">[[ user.id ]]</th>
+              <td><img :src="user.image" style="height: 26px" /></td>
+              <td>[[ user.username ]]</td>
+              <td>[[ user.city ]]</td>
+              <td>[[ user.hobbiesInCommon ]]</td>
+              <td>
+                <div style="display: flex; justify-content: flex-end">
+                  <!-- TODO: ADD FRIEND REQUEST AND STATUS -->
+                  <button
+                    type="button"
+                    class="btn btn-info"
+                    style="height: 100%"
+                  >
+                    Send Friend Request
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </template>
+  <template v-else> Loading... </template>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  let myApp = Vue.createApp({
+    delimiters: ["[[", "]]"],
+    data() {
+      // Initialize app with empty values
+      return {
+        loaded: false,
+        currentUser: null,
+        users: [],
+      };
+    },
+    async created() {
+      // Get logged in user info
+      let currentUserResponse = await fetch("{% url 'active_user_api' %}");
+      if (currentUserResponse.ok) {
+        const data = await currentUserResponse.json();
+        this.currentUser = data.user;
+      } else {
+        alert("Failed to load User Data");
+      }
+      // Fetch all users and assign to users var
+      let usersResponse = await fetch("{% url 'users_api' %}");
+      if (usersResponse.ok) {
+        const data = await usersResponse.json();
+        this.sortAndApplyUsers(data.users);
+        this.loaded = true;
+      } else {
+        alert("Failed to load users");
+      }
+    },
+    methods: {
+      redirect(user) {
+        // Redirect to users details page
+        window.location = `/users/${user.id}`;
+      },
+      sortAndApplyUsers(users) {
+        // Sort list of users in descending order by hobbies in common
+        users.forEach((user) => {
+          if (!user["city"]) {
+            user["city"] = "-";
+          }
+          otherUserHobbies = user.hobbies.hobbies;
+          user["hobbiesInCommon"] = otherUserHobbies.filter((hobby) =>
+            this.currentUser.hobbies.includes(hobby)
+          ).length;
+        });
+        users.sort(
+          (user1, user2) => user2.hobbiesInCommon - user1.hobbiesInCommon
+        );
+        this.users = users;
+      },
+      async resetUsers() {
+        // Reset user list and filters form
+        let usersResponse = await fetch("{% url 'users_api' %}");
+        if (usersResponse.ok) {
+          const data = await usersResponse.json();
+          this.sortAndApplyUsers(data.users);
+          document.getElementById("user-filters-form").reset();
+        } else {
+          alert("Failed to load users");
+        }
+      },
+      async applyFilters(submitEvent) {
+        // Get filter values
+        const username = submitEvent.target.elements.username.value;
+        const city = submitEvent.target.elements.city.value;
+        const minAge = submitEvent.target.elements.minAge.value;
+        const maxAge = submitEvent.target.elements.maxAge.value;
+
+        // Build object of applied filters
+        let queryObject = {};
+        if (username) {
+          queryObject["username"] = username;
+        }
+        if (city) {
+          queryObject["city"] = city;
+        }
+        if (minAge) {
+          queryObject["minAge"] = minAge;
+        }
+        if (maxAge) {
+          queryObject["maxAge"] = maxAge;
+        }
+
+        // Build queryString using queryObject
+        let queryString = "";
+        Object.keys(queryObject).forEach((key, i) => {
+          let combinationChar = "&";
+          if (i == 0) {
+            combinationChar = "?";
+          }
+          queryString += `${combinationChar}${key}=${queryObject[key]}`;
+        });
+
+        // Send GET request with querystring
+        const filteredUsersResponse = await fetch(
+          `{% url 'users_api' %}${queryString}`
+        );
+        if (filteredUsersResponse.ok) {
+          const data = await filteredUsersResponse.json();
+          // Update users
+          this.sortAndApplyUsers(data.users);
+        } else {
+          alert("Failed to filter users");
+        }
+      },
+    },
+  });
+
+  myApp.mount("#app");
+</script>
+{% endblock %}
