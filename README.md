@@ -18,7 +18,9 @@ Contributions:
 
 Contributions:
 
-- todo
+- Custom User model
+- Ajax for auth (signup/login/logout)
+- Ajax for friend requests
 
 ### Callum Spiller - 190833983
 
@@ -93,5 +95,5 @@ Vue.js reactive front-end with Bootstrap for styling.
 
 For each model, there is a to_dict() function which converts the model attributes to a Python Dictionary so that it can be handled much more easily in the API, and is organised to be returned as a JSON format.
 
-For each model, there are is an extra api value, which utilise the reverse() url function from django to return the url strings.
+For each model, there is an extra api value, which utilise the reverse() url function from django to return the url strings.
 The api value points to the api function that can PUT changes and DELETE the object.

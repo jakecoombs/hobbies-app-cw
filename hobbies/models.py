@@ -5,6 +5,21 @@ from django.urls import reverse
 DEFAULT_USER_PROFILE_IMAGE = 'https://media.istockphoto.com/vectors/default-profile-picture-avatar-photo-placeholder-vector-illustration-vector-id1223671392?k=20&m=1223671392&s=612x612&w=0&h=lGpj2vWAI3WUT1JeJWm1PRoHT3V15_1pdcTn2szdwQ0='
 
 
+class FriendRequest(models.Model):
+    sender_user = models.OneToOneField("User", on_delete=models.CASCADE, related_name="sender")
+    target_user = models.OneToOneField("User", on_delete=models.CASCADE, related_name="target")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['sender_user', 'target_user'], name="unique_friend_request")
+        ]
+
+    def to_dict(self):
+        return {
+            "sender_id": self.sender_user.id,
+            "target_id": self.target_user.id
+        }
+
 class User(AbstractUser):
     username = models.CharField(max_length=50, unique=True)
     email = models.CharField(max_length=50)
@@ -37,7 +52,7 @@ class User(AbstractUser):
                         for hobby in self.hobbies.all()]
         user_dict['hobbies'] = {
             'hobbies': [
-                hobby.id for hobby in hobbies_dict],
+                hobby["id"] for hobby in hobbies_dict],
             'total': len(hobbies_dict)
         }
 
@@ -45,8 +60,24 @@ class User(AbstractUser):
                         for friend in self.following.all()]
         user_dict['friends'] = {
             'friends': [
-                friend.id for friend in friends_dict],
+                friend["id"] for friend in friends_dict],
             'total': len(friends_dict)
+        }
+
+        outgoing_friend_requests = FriendRequest.objects.filter(sender_user=self)
+        user_dict["outgoingFriendRequests"] = {
+            "outgoingFriendRequests": [
+                request.id for request in outgoing_friend_requests
+            ],
+            "total": len(outgoing_friend_requests)
+        }
+
+        incoming_friend_requests = FriendRequest.objects.filter(target_user=self)
+        user_dict["incomingFriendRequests"] = {
+            "incomingFriendRequests": [
+                request.id for request in incoming_friend_requests
+            ],
+            "total": len(incoming_friend_requests)
         }
 
         return user_dict
@@ -72,7 +103,7 @@ class Hobby(models.Model):
         hobby_dict = self.to_dict()
         users_dict = [user.to_dict() for user in self.users.all()]
         hobby_dict['users'] = {
-            'ids': [user.id for user in users_dict],
+            'ids': [user["id"] for user in users_dict],
             'length': len(users_dict)
         }
         return hobby_dict
