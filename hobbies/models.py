@@ -1,17 +1,21 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
+from datetime import datetime
 
 DEFAULT_USER_PROFILE_IMAGE = 'https://media.istockphoto.com/vectors/default-profile-picture-avatar-photo-placeholder-vector-illustration-vector-id1223671392?k=20&m=1223671392&s=612x612&w=0&h=lGpj2vWAI3WUT1JeJWm1PRoHT3V15_1pdcTn2szdwQ0='
 
 
 class FriendRequest(models.Model):
-    sender_user = models.OneToOneField("User", on_delete=models.CASCADE, related_name="sender")
-    target_user = models.OneToOneField("User", on_delete=models.CASCADE, related_name="target")
+    sender_user = models.OneToOneField(
+        "User", on_delete=models.CASCADE, related_name="sender")
+    target_user = models.OneToOneField(
+        "User", on_delete=models.CASCADE, related_name="target")
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['sender_user', 'target_user'], name="unique_friend_request")
+            models.UniqueConstraint(
+                fields=['sender_user', 'target_user'], name="unique_friend_request")
         ]
 
     def to_dict(self):
@@ -19,6 +23,7 @@ class FriendRequest(models.Model):
             "sender_id": self.sender_user.id,
             "target_id": self.target_user.id
         }
+
 
 class User(AbstractUser):
     username = models.CharField(max_length=50, unique=True)
@@ -40,7 +45,7 @@ class User(AbstractUser):
             'id': self.id,
             'username': self.username,
             'email': self.email,
-            'dob': self.dob,
+            'dob': {'value': self.dob, 'display': self.formatted_date()},
             'city': self.city if self.city else None,
             'image': self.image.url if self.image else DEFAULT_USER_PROFILE_IMAGE
         }
@@ -59,28 +64,34 @@ class User(AbstractUser):
         friends_dict = [friend.to_dict()
                         for friend in self.following.all()]
         user_dict['friends'] = {
-            'friends': [
-                friend["id"] for friend in friends_dict],
+            'friends': friends_dict,
             'total': len(friends_dict)
         }
 
-        outgoing_friend_requests = FriendRequest.objects.filter(sender_user=self)
+        outgoing_friend_requests = FriendRequest.objects.filter(
+            sender_user=self)
         user_dict["outgoingFriendRequests"] = {
             "outgoingFriendRequests": [
-                request.id for request in outgoing_friend_requests
+                request.to_dict() for request in outgoing_friend_requests
             ],
             "total": len(outgoing_friend_requests)
         }
 
-        incoming_friend_requests = FriendRequest.objects.filter(target_user=self)
+        incoming_friend_requests = FriendRequest.objects.filter(
+            target_user=self)
         user_dict["incomingFriendRequests"] = {
             "incomingFriendRequests": [
-                request.id for request in incoming_friend_requests
+                request.to_dict() for request in incoming_friend_requests
             ],
             "total": len(incoming_friend_requests)
         }
 
         return user_dict
+
+    def formatted_date(self):
+        datetime_object = datetime.strptime(str(self.dob), "%Y-%m-%d")
+        # Return date string of format dd/mm/yyyy
+        return datetime_object.strftime("%d/%m/%Y")
 
 
 class Hobby(models.Model):

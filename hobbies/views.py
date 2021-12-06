@@ -1,9 +1,9 @@
-import os
+import json
 
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 
 from .models import User
 from .forms import LoginForm, SignupForm
@@ -13,17 +13,51 @@ from .forms import LoginForm, SignupForm
 def index(request):
     """Render the home page of the app"""
 
-    return render(request, 'hobbies/index.html', {
-        'title': 'Hobbies',
+    return render(request, "hobbies/index.html", {
+        "title": "Hobbies",
+        "nav": {
+            "hobbies": "active"
+        },
+        "loggedIn": {
+            "user": User.objects.get(id=request.user.id).to_dict_with_hobbies_and_friends()
+        }
     })
 
 
 @login_required
 def users(request):
-    """Render the home page of the app"""
+    """Render the users list page"""
 
-    return render(request, 'hobbies/users.html', {
-        'title': 'Hobbies: Users',
+    return render(request, "hobbies/users.html", {
+        "title": "Hobbies: Users",
+        "nav": {
+            "users": "active"
+        },
+        "loggedIn": {
+            "user": User.objects.get(id=request.user.id).to_dict_with_hobbies_and_friends()
+        }
+    })
+
+
+@login_required
+def user(request, user_id):
+    """Render the user detail page"""
+
+    userInfo = get_object_or_404(User, id=user_id)
+    title = f"Profile: {userInfo.username}"
+    if user_id == request.user.id:
+        title += " (You)"
+
+    return render(request, "hobbies/user.html", {
+        "title": title,
+        "nav": {
+            "self": "active" if user_id == request.user.id else None
+        },
+        "loggedIn": {
+            "user": User.objects.get(id=request.user.id).to_dict_with_hobbies_and_friends()
+        },
+        "userId": user_id,
+        "viewingSelf": user_id == request.user.id
     })
 
 
@@ -76,7 +110,12 @@ def signup(request):
                 return redirect("home")
 
     # GET request (or could not authenticate)
-    return render(request, 'hobbies/signup.html', {'form': SignupForm})
+    return render(request, "hobbies/signup.html", {
+        "form": SignupForm,
+        "nav": {
+            "signup": "active"
+        },
+    })
 
 
 def login(request):
@@ -102,10 +141,19 @@ def login(request):
 
         # invalid form
         return render(request, "hobbies/login.html", {
-            "form": form
+            "form": form,
+            "nav": {
+                "login": "active"
+            },
         })
 
-    return render(request, "hobbies/login.html", {"form": form})
+    return render(request, "hobbies/login.html",
+                  {
+                      "form": form,
+                      "nav": {
+                          "login": "active"
+                      },
+                  })
 
 
 @login_required

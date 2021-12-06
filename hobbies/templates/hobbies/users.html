@@ -73,13 +73,21 @@
               <td>[[ user.hobbiesInCommon ]]</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <!-- TODO: ADD FRIEND REQUEST AND STATUS -->
                   <button
                     type="button"
                     class="btn btn-info"
                     style="height: 100%"
+                    v-if="user.id == currentUser.id"
                   >
-                    Send Friend Request
+                    You
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-success"
+                    style="height: 100%"
+                    v-else-if="isUserFriend(user)"
+                  >
+                    Friend
                   </button>
                 </div>
               </td>
@@ -142,6 +150,11 @@
           (user1, user2) => user2.hobbiesInCommon - user1.hobbiesInCommon
         );
         this.users = users;
+      },
+      isUserFriend(user) {
+        return (
+          this.currentUser.friends.friends.find((u) => u.id == user.id) != null
+        );
       },
       async resetUsers() {
         // Reset user list and filters form

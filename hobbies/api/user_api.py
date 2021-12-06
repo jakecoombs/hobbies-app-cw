@@ -11,6 +11,12 @@ from .. import utils
 
 @user_login_required()
 def user_api(request, user_id):
+    if request.method == "GET":
+        user = User.objects.get(id=user_id)
+        return JsonResponse({
+            "user": user.to_dict_with_hobbies_and_friends()
+        })
+
     if request.method == "PUT":
         editing_user_string = request.body.decode('utf8').replace("'", '"')
         editing_user_dict = json.loads(editing_user_string)
@@ -47,7 +53,7 @@ def active_user_api(request):
     if request.method == "GET":
         user = User.objects.get(id=request.user.id)
         return JsonResponse({
-            'user': user.to_dict_with_hobbies_and_friends()
+            "user": user.to_dict_with_hobbies_and_friends()
         })
 
     return HttpResponseBadRequest("Invalid method")
@@ -112,7 +118,6 @@ def create_user_api(request):
     return HttpResponseBadRequest("Invalid method")
 
 
-
 @user_login_required()
 def upload_image(request):
     user = request.user
@@ -143,7 +148,8 @@ def send_friend_request_api(request):
         friend_request.save()
 
         return JsonResponse({
-            'user': target.to_dict_with_hobbies_and_friends()
+            'sender': sender.to_dict_with_hobbies_and_friends(),
+            'target': target.to_dict_with_hobbies_and_friends()
         })
 
     return HttpResponseBadRequest("Invalid method")
@@ -155,13 +161,15 @@ def answer_friend_request_api(request):
         body_dict = json.loads(request.body.decode('utf8').replace("'", '"'))
         target_id = request.user.id
         sender_id = body_dict["senderId"]
-        approve = True if body_dict["approve"] == "True" else False
+        approve = body_dict["approve"]
 
         sender = User.objects.get(id=sender_id)
         target = User.objects.get(id=target_id)
 
+        # The target of the response sent the request originally
         friend_requests = FriendRequest.objects.filter(sender_user=sender,
                                                        target_user=target)
+
         if len(friend_requests) < 1:
             return HttpResponse("No such friend request exists", status=500)
 
@@ -174,7 +182,8 @@ def answer_friend_request_api(request):
         friend_request.delete()
 
         return JsonResponse({
-            'user': sender.to_dict_with_hobbies_and_friends()
+            'sender': sender.to_dict_with_hobbies_and_friends(),
+            'target': target.to_dict_with_hobbies_and_friends()
         })
 
     return HttpResponseBadRequest("Invalid method")
@@ -194,7 +203,8 @@ def remove_friend_api(request):
         sender.save()
 
         return JsonResponse({
-            'user': sender.to_dict_with_hobbies_and_friends()
+            'sender': sender.to_dict_with_hobbies_and_friends(),
+            'target': target.to_dict_with_hobbies_and_friends()
         })
 
     return HttpResponseBadRequest("Invalid method")

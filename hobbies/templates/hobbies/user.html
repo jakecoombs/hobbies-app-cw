@@ -1,0 +1,336 @@
+{% extends 'hobbies/base.html' %} {% block content %}
+<div id="app">
+  {% csrf_token %}
+
+  <template v-if="loaded">
+    <div id="user-info" style="display: flex; margin-bottom: 40px">
+      <img :src="user.image" height="180" style="border: 3px solid black" />
+      <div v-if="editing" style="margin-left: 30px">
+        <form id="user-edit-form" @submit.prevent="editUser">
+          <h4>Username</h4>
+          <input type="text" name="username" :value="[[user.username]]" />
+          <h4>City</h4>
+          <input type="text" name="city" :value="[[user.city]]" />
+          <h4>Date of Birth</h4>
+          <input type="date" name="dob" :value="[[user.dob.value]]" />
+          <h4>Email</h4>
+          <input type="email" name="email" :value="[[user.email]]" />
+          <div style="display: flex; margin-top: 10px">
+            <button
+              type="button"
+              v-on:click="editing = false"
+              class="btn btn-danger"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-success"
+              style="margin-left: 10px"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+      <div v-else style="display: flex; flex: 1">
+        <div style="margin-left: 30px; flex: 1">
+          <h1 style="margin-bottom: 10px">[[ user.username ]]</h1>
+          <div id="user-details" style="font-size: x-large">
+            <div>
+              <strong>City:</strong>
+              [[user.city]]
+            </div>
+            <div>
+              <strong>Date of Birth:</strong>
+              [[user.dob.display]]
+            </div>
+            <template v-if="viewingSelf || friend=='yes'">
+              <div>
+                <strong>Email:</strong>
+                [[user.email]]
+              </div>
+            </template>
+          </div>
+        </div>
+        <div v-if="viewingSelf">
+          <button
+            type="button"
+            class="btn btn-primary"
+            v-on:click="editing = true"
+          >
+            Edit
+          </button>
+        </div>
+        <div v-else>
+          <!-- SHOW FRIEND STATUS -->
+          <div
+            v-if="friend == 'yes'"
+            style="display: flex; flex-direction: column"
+          >
+            <button type="button" class="btn btn-success">Friend</button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              v-on:click="removeFriend(user)"
+              style="margin-top: 10px"
+            >
+              Remove Friend
+            </button>
+          </div>
+          <button
+            type="button"
+            class="btn btn-warning"
+            v-else-if="friend == 'requested'"
+          >
+            Requested
+          </button>
+          <div
+            v-else-if="friend == 'awaitingResponse'"
+            style="display: flex; flex-direction: column"
+          >
+            <button
+              type="button"
+              class="btn btn-success"
+              v-on:click="respondFriendRequest(user,true)"
+            >
+              Accept Friend Request
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              v-on:click="respondFriendRequest(user,false)"
+              style="margin-top: 10px"
+            >
+              Decline Friend Request
+            </button>
+          </div>
+          <button
+            type="button"
+            class="btn btn-info"
+            v-else-if="friend == 'no'"
+            v-on:click="sendFriendRequest(user)"
+          >
+            Send Friend Request
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="user-hobbies" style="margin-bottom: 30px">
+      <h2>Hobbies ([[ user.hobbies.total ]])</h2>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col" width="10%">ID</th>
+            <th scope="col" width="25%">Name</th>
+            <th scope="col" width="65%">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="hobby in user.hobbies.hobbies"
+            style="cursor: pointer"
+            v-on:click="redirectHobby(hobby)"
+          >
+            <th scope="row">[[ hobby.id ]]</th>
+            <td>[[ hobby.name ]]</td>
+            <td>[[ hobby.description ]]</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="user-friends">
+      <h2>Friends ([[ user.friends.total ]])</h2>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col" width="15%"><!-- Image --></th>
+            <th scope="col" width="85%">Username</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="friend in user.friends.friends"
+            style="cursor: pointer"
+            v-on:click="redirectUser(friend)"
+          >
+            <td><img :src="friend.image" style="height: 26px" /></td>
+            <td>[[ friend.username ]]</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </template>
+  <template v-else> Loading... </template>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  let myApp = Vue.createApp({
+    delimiters: ["[[", "]]"],
+    data() {
+      // Initialize app with empty values
+      return {
+        loaded: false,
+        editing: false,
+        viewingSelf: "{{viewingSelf}}" == "True",
+        friend: "no",
+        user: null,
+        loggedInUser: null,
+      };
+    },
+    async created() {
+      // Fetch user info
+      let userResponse = await fetch(`{% url 'user_api' user_id=userId %}`);
+      if (userResponse.ok) {
+        const data = await userResponse.json();
+        this.user = data.user;
+      } else {
+        alert("Failed to load user");
+      }
+
+      let selfResponse = await fetch(
+        `{% url 'user_api' user_id=loggedIn.user.id %}`
+      );
+      if (selfResponse.ok) {
+        const data = await selfResponse.json();
+        this.loggedInUser = data.user;
+        this.checkFriendsStatus();
+      } else {
+        alert("Failed to load user");
+      }
+      this.loaded = true;
+    },
+    methods: {
+      checkFriendsStatus() {
+        if (this.viewingSelf) {
+          this.friend = "no";
+          return;
+        }
+        userFriendsList = this.user.friends.friends;
+        if (userFriendsList.find((f) => f.id == this.loggedInUser.id)) {
+          this.friend = "yes";
+        } else if (
+          this.loggedInUser.outgoingFriendRequests.outgoingFriendRequests.find(
+            (r) => r.target_id == this.user.id
+          )
+        ) {
+          this.friend = "requested";
+        } else if (
+          this.loggedInUser.incomingFriendRequests.incomingFriendRequests.find(
+            (r) => r.sender_id == this.user.id
+          )
+        ) {
+          this.friend = "awaitingResponse";
+        }
+      },
+      redirectUser(user) {
+        // Redirect to users details page
+        window.location = `/users/${user.id}`;
+      },
+      redirectHobby(hobby) {
+        // Redirect to hobby details page
+        window.location = `/hobbies/${hobby.id}`;
+      },
+      async sendFriendRequest(user) {
+        const requestResponse = await fetch("{% url 'send_friend_request' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken")
+              .value,
+          },
+          body: JSON.stringify({
+            targetId: user.id,
+          }),
+        });
+        if (requestResponse.ok) {
+          this.friend = "requested";
+        } else {
+          alert("Failed to send friend request");
+        }
+      },
+      async respondFriendRequest(user, accepted) {
+        const acceptRequestResponse = await fetch(
+          "{% url 'answer_friend_request' %}",
+          {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken")
+                .value,
+            },
+            body: JSON.stringify({
+              senderId: user.id,
+              approve: accepted,
+            }),
+          }
+        );
+        if (acceptRequestResponse.ok) {
+          const data = await acceptRequestResponse.json();
+          this.user = data.sender;
+          this.loggedInUser = data.target;
+          this.friend = accepted ? "yes" : "no";
+        } else {
+          alert("Failed to respond to friend request");
+        }
+      },
+      async removeFriend(user) {
+        const removeResponse = await fetch("{% url 'remove_friend' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken")
+              .value,
+          },
+          body: JSON.stringify({
+            targetId: user.id,
+          }),
+        });
+        if (removeResponse.ok) {
+          const data = await removeResponse.json();
+          this.user = data.target;
+          this.loggedInUser = data.sender;
+          this.friend = "no";
+        } else {
+          alert("Failed to send friend request");
+        }
+      },
+      async editUser(submitEvent) {
+        const username =
+          submitEvent.target.elements.username.value ?? this.user.username;
+        const city = submitEvent.target.elements.city.value ?? this.user.city;
+        const dob = submitEvent.target.elements.dob.value ?? this.user.dob;
+        const email =
+          submitEvent.target.elements.email.value ?? this.user.email;
+
+        // Send PUT request
+        const editUsersResponse = await fetch(
+          "{% url 'user_api' user_id=userId %}",
+          {
+            method: "PUT",
+            headers: {
+              "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken")
+                .value,
+            },
+            body: JSON.stringify({
+              username: username,
+              city: city,
+              dob: dob,
+              email: email,
+              hobbies: this.user.hobbies.hobbies,
+            }),
+          }
+        );
+        if (editUsersResponse.ok) {
+          const data = await editUsersResponse.json();
+          // Update users
+          this.user = data.user;
+          this.editing = false;
+        } else {
+          alert("Failed to update user");
+        }
+      },
+    },
+  });
+
+  myApp.mount("#app");
+</script>
+{% endblock %}
