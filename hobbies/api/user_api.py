@@ -153,8 +153,8 @@ def send_friend_request_api(request):
 def answer_friend_request_api(request):
     if request.method == "POST":
         body_dict = json.loads(request.body.decode('utf8').replace("'", '"'))
-        sender_id = request.user.id
-        target_id = body_dict["targetId"]
+        target_id = request.user.id
+        sender_id = body_dict["senderId"]
         approve = True if body_dict["approve"] == "True" else False
 
         sender = User.objects.get(id=sender_id)
