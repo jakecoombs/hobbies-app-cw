@@ -21,6 +21,7 @@ Contributions:
 - Custom User model
 - Ajax for auth (signup/login/logout)
 - Ajax for friend requests
+- Unit tests for login and signup
 
 ### Callum Spiller - 190833983
 
@@ -60,12 +61,12 @@ Url: https://group42-group42.apps.kube.eecs.qmul.ac.uk/
 
 ## Marking Criteria
 
-- [ ] Account creation and login working
-- [ ] Using Django's AbstractUser model and authentication framework
+- [x] Account creation and login working
+- [x] Using Django's AbstractUser model and authentication framework
 - [ ] Profile page included, with (editable) profile picture, email, city, dob and list of hobbies
 - [ ] Correct modelling of application data and relationships
 - [ ] List of users with similar hobbies page included and working as expected
-- [ ] Using Ajax where required with Vue and fetch API
+- [x] Using Ajax where required with Vue and fetch API
 - [ ] Avoiding hard-coded URLs using URL reversing
 - [ ] Avoiding code duplication using template hierarchy and/or decorators where needed
 - [ ] Required unit tests included
