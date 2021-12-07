@@ -107,7 +107,7 @@ class Hobby(models.Model):
             'id': self.id,
             'name': self.name,
             'description': self.description,
-            'api': reverse('hobby_api', kwargs={'hobby_id': self.id})
+            'api': reverse('hobby-api', kwargs={'hobby_id': self.id})
         }
 
     def to_dict_with_users(self):

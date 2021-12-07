@@ -34,15 +34,3 @@ class SignupForm(forms.Form):
         label="Confirm Password",
         widget=forms.PasswordInput()
     )
-
-class HobbyForm(forms.Form):
-    name = forms.CharField(
-        label="Name",
-        max_length=50,
-        widget=forms.TextInput(attrs={"autocomplete": "name"})
-    )
-    description = forms.CharField(
-        label="Description",
-        max_length=200,
-        widget=forms.TextInput(attrs={"autocomplete": "description"})
-    )

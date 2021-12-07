@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 
-from .models import Hobby, User
-from .forms import HobbyForm, LoginForm, SignupForm
+from .models import User
+from .forms import LoginForm, SignupForm
 
 
 @login_required
@@ -154,65 +154,6 @@ def login(request):
                           "login": "active"
                       },
                   })
-
-@login_required
-def create(request):
-    form = HobbyForm()
-
-    if request.method == "POST":
-        form = HobbyForm(request.POST)
-
-        if form.is_valid():
-            name = form.cleaned_data["name"]
-            description = form.cleaned_data["description"]
-
-            # validation
-            error_message = None
-            if Hobby.objects.all().filter(name=name).exists():
-                error_message = "Hobby already exists."
-
-            if error_message:
-                # could not authenticate
-                return render(request, "hobbies/error.html", {
-                    "error": error_message
-                })
-
-            # create new hobby
-            new_hobby = Hobby.objects.create(name=name,
-                                           description=description)
-            new_hobby.save()
-
-            
-            return redirect("home")
-
-    return render(request, "hobbies/createhobby.html", {
-        "title": "Hobbies: Create",
-        "form": HobbyForm,
-        "nav": {
-            "create": "active",
-        },
-        "loggedIn": {
-            "user": User.objects.get(id=request.user.id).to_dict_with_hobbies_and_friends()
-        },
-    })
-
-@login_required
-def hobby(request, hobby_id):
-    """Render the hobby detail page"""
-
-    hobbyInfo = get_object_or_404(Hobby, id=hobby_id)
-    title = f"Hobby: {hobbyInfo.name}"
-
-    return render(request, {
-        "title": title,
-        "nav": {
-            "self": "active"
-        },
-        "hobbyId": hobby_id,
-        "loggedIn": {
-            "user": User.objects.get(id=request.user.id).to_dict_with_hobbies_and_friends()
-        },
-    })
 
 
 @login_required

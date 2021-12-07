@@ -22,7 +22,4 @@ urlpatterns = [
     path('login/', views.login, name="login"),
     path('signup/', views.signup, name="signup"),
     path('logout/', views.logout, name="logout"),
-    path('hobbies/create/', views.create, name="create"),
-    path('hobbies/create/api/hobbies/', views.create, name="create"),
-    path('hobbies/<int:hobby_id>/', views.hobby, name='hobby'),
 ]
