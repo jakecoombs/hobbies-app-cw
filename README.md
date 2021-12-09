@@ -31,11 +31,13 @@ Contributions:
 - Ajax for User (filter by either id/city/age, url params)
 - Ajax for Hobby
 
-### Ziyad Mahmood -
+### Ziyaad Mahmood - 160394461
 
 Contributions:
 
-- todo
+- Login/signup page
+- Delete Hobby
+- Create new hobby
 
 ## EECS OpenShift Deployment
 
