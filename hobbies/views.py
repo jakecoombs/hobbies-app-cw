@@ -90,7 +90,8 @@ def signup(request):
             if error_message:
                 # could not authenticate
                 return render(request, "hobbies/error.html", {
-                    "error": error_message
+                    "error": error_message,
+                    'title': 'Error: Sign Up'
                 })
 
             # create new user
@@ -110,9 +111,10 @@ def signup(request):
                 return redirect("home")
 
     # GET request (or could not authenticate)
-    return render(request, "hobbies/signup.html", {
-        "form": SignupForm,
-        "nav": {
+    return render(request, 'hobbies/signup.html', {
+        'form': SignupForm,
+        'title': 'Hobbies: Sign Up',
+        'nav': {
             "signup": "active"
         },
     })
@@ -136,24 +138,26 @@ def login(request):
 
             # could not authenticate
             return render(request, "hobbies/error.html", {
-                "error": "User is not registered. Please create an account."
+                "error": "User is not registered. Please create an account.", 'title': 'Error: Login'
             })
 
         # invalid form
         return render(request, "hobbies/login.html", {
             "form": form,
+            "title": 'Hobbies: Login',
             "nav": {
                 "login": "active"
             },
         })
 
-    return render(request, "hobbies/login.html",
-                  {
-                      "form": form,
-                      "nav": {
-                          "login": "active"
-                      },
-                  })
+    return render(request, "hobbies/login.html", {
+        "form": form,
+        'title': 'Hobbies: Login',
+        'nav': {
+            "login": "active"
+        },
+    })
+
 
 
 @login_required
