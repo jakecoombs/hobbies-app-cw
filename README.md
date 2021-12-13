@@ -30,6 +30,7 @@ Contributions:
 - Create Hobby model
 - Ajax for User (filter by either id/city/age, url params)
 - Ajax for Hobby
+- Unit test for users/hobbies
 
 ### Ziyaad Mahmood - 160394461
 
@@ -52,28 +53,28 @@ Url: https://group42-group42.apps.kube.eecs.qmul.ac.uk/
 
 1.  - `testuser`
     - `pass`
-2.  - username
-    - password
-3.  - username
-    - password
-4.  - username
-    - password
-5.  - username
-    - password
+2.  - `testuser1`
+    - `pass1`
+3.  - `testuser2`
+    - `pass2`
+4.  - `testuser3`
+    - `pass3`
+5.  - `testuser4`
+    - `pass4`
 
 ## Marking Criteria
 
 - [x] Account creation and login working
 - [x] Using Django's AbstractUser model and authentication framework
 - [ ] Profile page included, with (editable) profile picture, email, city, dob and list of hobbies
-- [ ] Correct modelling of application data and relationships
+- [x] Correct modelling of application data and relationships
 - [ ] List of users with similar hobbies page included and working as expected
 - [x] Using Ajax where required with Vue and fetch API
 - [ ] Avoiding hard-coded URLs using URL reversing
-- [ ] Avoiding code duplication using template hierarchy and/or decorators where needed
-- [ ] Required unit tests included
+- [x] Avoiding code duplication using template hierarchy and/or decorators where needed
+- [x] Required unit tests included
 - [x] App deployed to Openshift
-- [ ] README and requirements.txt files included with the requested information
+- [x] README and requirements.txt files included with the requested information
 
 ## About the Application
 
@@ -85,10 +86,6 @@ Django python server
 - Run server using `{py or python} manage.py runserver`
 - Make migrations when changing a model using `{py or python} manage.py makemigrations`
 - Run migrations after making migrations using `{py or python} manage.py migrate`
-
-| Url      | Function |
-| -------- | -------- |
-| /api/... | GET ...  |
 
 ### Home View
 
