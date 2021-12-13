@@ -1,0 +1,245 @@
+{% extends 'hobbies/base.html' %} {% block content %}
+<div id="app">
+  {% csrf_token %}
+
+  <template v-if="loaded">
+    <div id="hobby-info" style="display: flex; margin-bottom: 40px">
+      <div v-if="editing">
+        <form id="hobby-edit-form" @submit.prevent="editHobby">
+          <h4>Name</h4>
+          <input type="text" name="hobbyName" :value="[[hobby.name]]" />
+          <h4 style="margin-top: 20px">Description</h4>
+          <textarea
+            name="description"
+            cols="40"
+            :value="[[hobby.description]]"
+          ></textarea>
+          <div style="display: flex; margin-top: 10px">
+            <button
+              type="button"
+              v-on:click="editing = false"
+              class="btn btn-danger"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-success"
+              style="margin-left: 10px"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+      <div v-else style="display: flex; flex: 1">
+        <div style="flex: 1">
+          <h1 style="margin-bottom: 10px">[[ hobby.name ]]</h1>
+          <div id="hobby-details" style="font-size: x-large">
+            [[ hobby.description ]]
+          </div>
+        </div>
+        <div>
+          <button
+            v-if="following"
+            type="button"
+            class="btn btn-danger"
+            v-on:click="unfollowHobby"
+          >
+            Unfollow
+          </button>
+          <button
+            v-else
+            type="button"
+            class="btn btn-success"
+            v-on:click="followHobby"
+          >
+            Follow
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            v-on:click="editing = true"
+            style="margin-left: 10px"
+          >
+            Edit
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="hobby-members">
+      <h2>Members ([[ hobby.users.total ]])</h2>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col" width="50%">Username</th>
+            <th scope="col" width="50%">City</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="user in hobby.users.users"
+            style="cursor: pointer"
+            v-on:click="redirectUser(user)"
+          >
+            <td>[[ user.username ]]</td>
+            <td>[[ user.city ]]</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </template>
+  <template v-else> Loading... </template>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  let myApp = Vue.createApp({
+    delimiters: ["[[", "]]"],
+    data() {
+      // Initialize app with empty values
+      return {
+        loaded: false,
+        editing: false,
+        following: false,
+        hobby: null,
+        loggedInUser: null,
+      };
+    },
+    async created() {
+      // Fetch user info
+      let hobbyResponse = await fetch(`{% url 'hobby_api' hobby_id=hobbyId %}`);
+      if (hobbyResponse.ok) {
+        const data = await hobbyResponse.json();
+        this.hobby = data.hobby;
+      } else {
+        alert("Failed to load hobby");
+      }
+
+      let selfResponse = await fetch(
+        `{% url 'user_api' user_id=loggedIn.user.id %}`
+      );
+      if (selfResponse.ok) {
+        const data = await selfResponse.json();
+        this.loggedInUser = data.user;
+        this.checkFollowingHobby();
+      } else {
+        alert("Failed to load user");
+      }
+      this.loaded = true;
+    },
+    methods: {
+      redirectUser(user) {
+        // Redirect to users details page
+        window.location = `/users/${user.id}`;
+      },
+      redirectHobby(hobby) {
+        // Redirect to hobby details page
+        window.location = `/hobbies/${hobby.id}`;
+      },
+      checkFollowingHobby() {
+        hobbyMembers = this.hobby.users.users;
+        if (hobbyMembers.find((f) => f.id == this.loggedInUser.id)) {
+          this.following = true;
+        }
+      },
+      async followHobby() {
+        let newUsersList = this.hobby.users.users;
+        newUsersList.push({
+          id: this.loggedInUser.id,
+        });
+
+        const followHobbyResponse = await fetch(
+          "{% url 'hobby_api' hobby_id=hobbyId %}",
+          {
+            method: "PUT",
+            headers: {
+              "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken")
+                .value,
+            },
+            body: JSON.stringify({
+              name: this.hobby.name,
+              description: this.hobby.description,
+              users: newUsersList,
+            }),
+          }
+        );
+
+        if (followHobbyResponse.ok) {
+          const data = await followHobbyResponse.json();
+          // Update hobby
+          this.hobby = data.hobby;
+          this.following = true;
+        } else {
+          alert("Failed to follow hobby");
+        }
+      },
+      async unfollowHobby() {
+        let newUsersList = this.hobby.users.users;
+        const currentUserIndex = newUsersList.findIndex(
+          (u) => u.id == this.loggedInUser.id
+        );
+        newUsersList.pop(currentUserIndex);
+
+        const unfollowHobbyResponse = await fetch(
+          "{% url 'hobby_api' hobby_id=hobbyId %}",
+          {
+            method: "PUT",
+            headers: {
+              "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken")
+                .value,
+            },
+            body: JSON.stringify({
+              name: this.hobby.name,
+              description: this.hobby.description,
+              users: newUsersList,
+            }),
+          }
+        );
+
+        if (unfollowHobbyResponse.ok) {
+          const data = await unfollowHobbyResponse.json();
+          // Update hobby
+          this.hobby = data.hobby;
+          this.following = false;
+        } else {
+          alert("Failed to unfollow hobby");
+        }
+      },
+      async editHobby(submitEvent) {
+        const hobbyName =
+          submitEvent.target.elements.hobbyName.value ?? this.hobby.name;
+        const description =
+          submitEvent.target.elements.description.value ??
+          this.hobby.description;
+
+        // Send PUT request
+        const editHobbyResponse = await fetch(
+          "{% url 'hobby_api' hobby_id=hobbyId %}",
+          {
+            method: "PUT",
+            headers: {
+              "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken")
+                .value,
+            },
+            body: JSON.stringify({
+              name: hobbyName,
+              description: description,
+            }),
+          }
+        );
+
+        if (editHobbyResponse.ok) {
+          const data = await editHobbyResponse.json();
+          // Update hobby
+          this.hobby = data.hobby;
+          this.editing = false;
+        } else {
+          alert("Failed to update hobby");
+        }
+      },
+    },
+  });
+
+  myApp.mount("#app");
+</script>
+{% endblock %}

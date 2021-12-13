@@ -8,22 +8,30 @@ from hobbies.models import Hobby, User
 
 @user_login_required()
 def hobby_api(request, hobby_id):
+    if request.method == "GET":
+        hobby = Hobby.objects.get(id=hobby_id)
+        return JsonResponse({
+            "hobby": hobby.to_dict_with_users()
+        })
+
     if request.method == "PUT":
         editing_hobby_string = request.body.decode('utf8').replace("'", '"')
         editing_hobby_dict = json.loads(editing_hobby_string)
         hobby_to_change = Hobby.objects.get(id=hobby_id)
         hobby_to_change.name = editing_hobby_dict['name']
         hobby_to_change.description = editing_hobby_dict['description']
-        hobby_to_change.users.clear()
 
         if "users" in editing_hobby_dict.keys():
-            for userID in editing_hobby_dict['users']:
-                user_to_add = User.objects.filter(id=userID).first()
+            hobby_to_change.users.clear()
+            for user in editing_hobby_dict['users']:
+                user_to_add = User.objects.filter(id=user['id']).first()
                 hobby_to_change.users.add(user_to_add)
 
         hobby_to_change.save()
 
-        return HttpResponse(200)
+        return JsonResponse({
+            "hobby": hobby_to_change.to_dict_with_users()
+        })
 
     if request.method == "DELETE":
         hobby = get_object_or_404(Hobby, id=hobby_id)

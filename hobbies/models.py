@@ -56,8 +56,7 @@ class User(AbstractUser):
         hobbies_dict = [hobby.to_dict()
                         for hobby in self.hobbies.all()]
         user_dict['hobbies'] = {
-            'hobbies': [
-                hobby["id"] for hobby in hobbies_dict],
+            'hobbies': hobbies_dict,
             'total': len(hobbies_dict)
         }
 
@@ -114,7 +113,7 @@ class Hobby(models.Model):
         hobby_dict = self.to_dict()
         users_dict = [user.to_dict() for user in self.users.all()]
         hobby_dict['users'] = {
-            'ids': [user["id"] for user in users_dict],
-            'length': len(users_dict)
+            'users': users_dict,
+            'total': len(users_dict)
         }
         return hobby_dict

@@ -7,6 +7,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name="home"),
+    path('hobbies/<int:hobby_id>/', views.hobby, name='hobby'),
     path('users', views.users, name="users"),
     path('users/<int:user_id>/', views.user, name='user'),
     path('api/hobbies/<int:hobby_id>/', hobby_api, name='hobby_api'),
@@ -16,8 +17,10 @@ urlpatterns = [
     path('api/users/create/', create_user_api, name='create_user_api'),
     path('api/users/', users_api, name='users_api'),
     path('api/uploadimage/', upload_image, name='upload_image'),
-    path('api/sendfriendrequest/', send_friend_request_api, name='send_friend_request'),
-    path('api/answerfriendrequest/', answer_friend_request_api, name='answer_friend_request'),
+    path('api/sendfriendrequest/', send_friend_request_api,
+         name='send_friend_request'),
+    path('api/answerfriendrequest/', answer_friend_request_api,
+         name='answer_friend_request'),
     path('api/removefriend/', remove_friend_api, name='remove_friend'),
     path('login/', views.login, name="login"),
     path('signup/', views.signup, name="signup"),

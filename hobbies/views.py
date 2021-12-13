@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 
-from .models import User
+from .models import Hobby, User
 from .forms import LoginForm, SignupForm
 
 
@@ -58,6 +58,25 @@ def user(request, user_id):
         },
         "userId": user_id,
         "viewingSelf": user_id == request.user.id
+    })
+
+
+@login_required
+def hobby(request, hobby_id):
+    """Render the hobby detail page"""
+
+    hobbyInfo = get_object_or_404(Hobby, id=hobby_id)
+    title = f"Hobby: {hobbyInfo.name}"
+
+    return render(request, "hobbies/hobby.html", {
+        "title": title,
+        "nav": {
+            "hobbies": "active"
+        },
+        "loggedIn": {
+            "user": User.objects.get(id=request.user.id).to_dict_with_hobbies_and_friends()
+        },
+        "hobbyId": hobby_id
     })
 
 

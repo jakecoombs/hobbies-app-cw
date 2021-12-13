@@ -28,8 +28,8 @@ def user_api(request, user_id):
         user_to_change.hobbies.clear()
 
         if "hobbies" in editing_user_dict.keys():
-            for hobbyID in editing_user_dict['hobbies']:
-                hobby_to_add = Hobby.objects.filter(id=hobbyID).first()
+            for hobby in editing_user_dict['hobbies']:
+                hobby_to_add = Hobby.objects.filter(id=hobby['id']).first()
                 user_to_change.hobbies.add(hobby_to_add)
 
         user_to_change.save()

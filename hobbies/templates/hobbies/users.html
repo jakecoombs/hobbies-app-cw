@@ -142,8 +142,10 @@
             user["city"] = "-";
           }
           otherUserHobbies = user.hobbies.hobbies;
-          user["hobbiesInCommon"] = otherUserHobbies.filter((hobby) =>
-            this.currentUser.hobbies.includes(hobby)
+          user["hobbiesInCommon"] = otherUserHobbies.filter(
+            (hobby) =>
+              this.currentUser.hobbies.hobbies.find((h) => h.id == hobby.id) !=
+              null
           ).length;
         });
         users.sort(
